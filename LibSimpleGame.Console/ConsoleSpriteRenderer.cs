@@ -2,18 +2,25 @@
 {
     public class ConsoleSpriteRenderer : GameComponent
     {
-        public override void Update()
+        private ConsoleGameRenderAdapter? adapter;
+
+        public override void Awake()
         {
-            if (Owner == null)
+            adapter = Game.Renderer.GetRequiredAdapter<ConsoleGameRenderAdapter>();
+        }
+
+        public override void LateUpdate()
+        {
+            if (adapter == null)
                 return;
-            if (Owner.GetComponent<ConsoleRenderer>() is not ConsoleRenderer renderer)
+            if (Owner == null)
                 return;
             if (Owner.GetComponent<ConsoleSprite>() is not ConsoleSprite sprite)
                 return;
 
             var position = Owner.Position.ToPoint();
 
-            var buffer = renderer.Buffer;
+            var buffer = adapter.Buffer;
             var image = sprite.Image;
             var center = sprite.CenterPoint;
 
@@ -38,10 +45,8 @@
             {
                 for (int x = xStart; x < xEnd; x++)
                 {
-                    var current = new Point(x, y);
-                    var currentPoint = startPoint + new Size(x, y);
-                    image.Get(current, out char c, out Color fg, out Color bg);
-                    buffer.Set(currentPoint, c, fg, bg);
+                    image.Get(x, y, out char c, out Color fg, out Color bg);
+                    buffer.Set(startPoint.X + x, startPoint.Y + y, c, fg, bg);
                 }
             }
         }

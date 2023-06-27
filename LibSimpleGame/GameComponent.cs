@@ -17,6 +17,8 @@
 
         public virtual void FixedUpdate() { }
 
+        public virtual void Stop() { }
+
 
         public virtual void OnDestroy() { }
 

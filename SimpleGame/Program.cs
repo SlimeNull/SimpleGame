@@ -1,19 +1,19 @@
-﻿using LibSimpleGame.Console;
+﻿using System.ComponentModel;
+using LibSimpleGame.Console;
 
 namespace LibSimpleGame
 {
 
     internal class Program
     {
-        public static ConsoleImage SpriteImage = new ConsoleImage(10, 10);
+        public static ConsoleImage SpriteImage = new ConsoleImage(1, 1);
 
         static void Main(string[] args)
         {
-            for (int x = 0; x < 10; x++)
-            {
-                SpriteImage.Set(new Point(x, 0), 'M', Color.White, new Color(211, 237, 253));
-                SpriteImage.Set(new Point(x, 9), 'M', Color.White, new Color(211, 237, 253));
-            }
+            int width = 100;
+            int height = 30;
+
+            SpriteImage.Set(new Point(0, 0), 'M', Color.White, new Color(211, 237, 253));
 
             Game game = new Game()
             {
@@ -23,23 +23,73 @@ namespace LibSimpleGame
                     {
                         Components =
                         {
-                            new ConsoleRenderer(),
+                            new InfoShow()
+                        }
+                    },
+                    new GameObject()
+                    {
+                        Components =
+                        {
                             new ConsoleSprite(SpriteImage),
                             new ConsoleSpriteRenderer(),
-                            new MoveFollowCursor(),
+                            new MoveFollowCursor()
                         }
+                    },
+                    new GameObject()
+                    {
+                        Components =
+                        {
+                            new ConsoleSprite(SpriteImage),
+                            new ConsoleSpriteRenderer(),
+                            new RepeatMoving()
+                        } 
+                        
                     }
                 }
             };
 
-            game.Input.AddConsoleInputAdapter();
+            game.AddConsoleAdapters(adapters =>
+            {
+                adapters.RenderAdapter.Resize(width, height);
+            });
 
             game.Start();
+
             System.Console.CursorVisible = false;
+            System.Console.SetWindowSize(width + 1, height + 1);
+            System.Console.SetBufferSize(width + 1, height + 1);
+
+
             while (true)
             {
-                System.Console.ReadKey();
+                Thread.Sleep(1);
             }
+        }
+    }
+
+    class InfoShow : GameComponent
+    {
+        Timer? timer;
+        int frameRenderCount;
+
+        public override void Start()
+        {
+            timer = new Timer(state =>
+            {
+                System.Console.Title = $"FPS: {frameRenderCount / 0.5:00000}";
+                frameRenderCount = 0;
+            }, null, 0, 500);
+        }
+
+        public override void Update()
+        {
+            frameRenderCount++;
+        }
+
+        public override void Stop()
+        {
+            timer?.Dispose();
+            timer = null;
         }
     }
 
@@ -47,11 +97,26 @@ namespace LibSimpleGame
     {
         public override void Update()
         {
-            GameObject.Position += new SizeF(
-                Game.Input.GetAxisRaw("Horizontal"),
-                Game.Input.GetAxisRaw("Vertical")) * (float)Game.Time.Delta.TotalSeconds * 10;
+            GameObject.Position = Game.Input.GetCursorPosition();
+        }
+    }
 
-            System.Console.Title = $"Position: {GameObject.Position} X Axis: {Game.Input.GetAxis("Horizontal")}, Delta time: {Game.Time.Delta}";
+    class RepeatMoving : GameComponent
+    {
+
+        int i = 0;
+
+        public override void Update()
+        {
+            if (i >= 10)
+                i = 0;
+
+            GameObject.Position = GameObject.Position with
+            {
+                X = i
+            };
+
+            i++;
         }
     }
 }

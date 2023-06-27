@@ -25,4 +25,9 @@
             CenterPoint = centerPoint;
         }
     }
+
+    public class ConsoleText : GameComponent
+    {
+
+    }
 }

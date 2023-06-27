@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace LibSimpleGame.Console
 {
-    public struct KeyEvent
+    internal struct KeyEvent
     {
         internal KeyEvent(NativeApi.ControlKeyState cks, bool down, ConsoleKey key, char chr)
         {

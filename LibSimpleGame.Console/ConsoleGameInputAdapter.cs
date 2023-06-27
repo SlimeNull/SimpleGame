@@ -72,35 +72,43 @@ namespace LibSimpleGame.Console
             {
                 try
                 {
-                    var rec = new NativeApi.INPUT_RECORD[1];
+                    uint bufferSize = 128;
+                    var buffer = new NativeApi.INPUT_RECORD[bufferSize];
                     while (true)
                     {
-                        NativeApi.ReadConsoleInput(NativeApi.GetStdHandle(-10), rec, 1, out _);
+                        NativeApi.ReadConsoleInput(NativeApi.GetStdHandle(-10), buffer, bufferSize, out uint numRead);
 
                         if (destroy)
                             break;
 
-                        switch (rec[0].EventType)
+                        for (uint i = 0; i < numRead; i++)
                         {
-                            case NativeApi.InputRecordEventType.KEY_EVENT:
+                            var input = buffer[i];
+                            switch (input.EventType)
                             {
-                                var keybd = rec[0].KeyEvent;
-                                var keyEvent = new KeyEvent(keybd.dwControlKeyState, keybd.bKeyDown, (ConsoleKey)keybd.wVirtualKeyCode, keybd.UnicodeChar);
-                                ProcessKeyEvent(keyEvent);
-                                break;
-                            }
-                            case NativeApi.InputRecordEventType.MOUSE_EVENT:
-                            {
-                                var mouse = rec[0].MouseEvent;
-                                if (mouse.dwEventFlags == NativeApi.MouseEventFlags.MOUSE_MOVED)
-                                    currentCursorPosition = new Point(mouse.dwMousePosition.X, mouse.dwMousePosition.Y);
+                                case NativeApi.InputRecordEventType.KEY_EVENT:
+                                {
+                                    var keybd = input.KeyEvent;
+                                    var keyEvent = new KeyEvent(keybd.dwControlKeyState, keybd.bKeyDown, (ConsoleKey)keybd.wVirtualKeyCode, keybd.UnicodeChar);
+                                    ProcessKeyEvent(keyEvent);
+                                    break;
+                                }
+                                case NativeApi.InputRecordEventType.MOUSE_EVENT:
+                                {
+                                    var mouse = input.MouseEvent;
+                                    if (mouse.dwEventFlags == NativeApi.MouseEventFlags.MOUSE_MOVED)
+                                    {
+                                        currentCursorPosition = new Point(mouse.dwMousePosition.X, mouse.dwMousePosition.Y);
+                                        Debug.WriteLine($"Mouse moved: {mouse.dwMousePosition.X}, {mouse.dwMousePosition.Y}");
+                                    }
 
-                                break;
+                                    break;
+                                }
+                                case NativeApi.InputRecordEventType.WINDOW_BUFFER_SIZE_EVENT:
+                                case NativeApi.InputRecordEventType.FOCUS_EVENT:
+                                default:
+                                    break;
                             }
-                            case NativeApi.InputRecordEventType.WINDOW_BUFFER_SIZE_EVENT:
-                            case NativeApi.InputRecordEventType.FOCUS_EVENT:
-                            default:
-                                break;
                         }
                     }
                 }

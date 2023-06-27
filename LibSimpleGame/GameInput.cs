@@ -1,6 +1,6 @@
 ﻿namespace LibSimpleGame
 {
-    public class GameInput
+    public class GameInput : IGameInput
     {
         public Game Game { get; }
         public GameInputAdapterCollection Adapters { get; }
@@ -9,6 +9,24 @@
         {
             Game = game;
             Adapters = new GameInputAdapterCollection(this);
+        }
+
+        public void Start()
+        {
+            foreach (var adapter in Adapters)
+                adapter.Start();
+        }
+
+        public void Update()
+        {
+            foreach (var adapter in Adapters)
+                adapter.Update();
+        }
+
+        public void Stop()
+        {
+            foreach (var adapter in Adapters)
+                adapter.Stop();
         }
 
 
@@ -79,6 +97,17 @@
                 return adapter.GetCursorPosition();
 
             return Point.Empty;
+        }
+
+        public TAdapter? GetAdapter<TAdapter>() where TAdapter : GameInputAdapter
+        {
+            return Adapters.OfType<TAdapter>().FirstOrDefault();
+        }
+
+        public TAdapter GetRequiredAdapter<TAdapter>() where TAdapter : GameInputAdapter
+        {
+            return GetAdapter<TAdapter>() ?? 
+                throw new InvalidOperationException("Adapter not found");
         }
 
         public class GameInputAdapterCollection : LinkCollection<GameInput, GameInputAdapter>

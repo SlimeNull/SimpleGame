@@ -16,14 +16,14 @@
             Components = new GameComponentCollection(this);
         }
 
-        public TComponent? GetComponent<TComponent>()
+        public TComponent? GetComponent<TComponent>() where TComponent : GameComponent
         {
             return Components.OfType<TComponent>().FirstOrDefault();
         }
 
-        public TComponent GetRequiredComponent<TComponent>()
+        public TComponent GetRequiredComponent<TComponent>() where TComponent : GameComponent
         {
-            return Components.OfType<TComponent>().FirstOrDefault() ??
+            return GetComponent<TComponent>() ??
                 throw new InvalidOperationException("No component with specified type in game object");
         }
 
@@ -38,5 +38,12 @@
         }
 
         Game? ILinkCollectionItem<Game>.Owner { get => Owner; set => Owner = value; }
+
+        public sealed class GameComponentCollection : LinkCollection<GameObject, GameComponent>
+        {
+            public GameComponentCollection(GameObject owner) : base(owner)
+            {
+            }
+        }
     }
 }

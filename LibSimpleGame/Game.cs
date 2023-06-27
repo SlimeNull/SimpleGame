@@ -13,12 +13,14 @@ namespace LibSimpleGame
     {
         public GameTime Time { get; }
         public GameInput Input { get; }
+        public GameRenderer Renderer { get; }
         public GameObjectCollection Objects { get; }
 
         public Game()
         {
             Time = new GameTime(this);
             Input = new GameInput(this);
+            Renderer = new GameRenderer(this);
             Objects = new GameObjectCollection(this);
         }
 

@@ -1,6 +1,6 @@
 ﻿namespace LibSimpleGame
 {
-    public abstract class GameInputAdapter : ILinkCollectionItem<GameInput>
+    public abstract class GameInputAdapter : IGameInput, ILinkCollectionItem<GameInput>
     {
         public GameInput? Input { get; internal set; }
 
